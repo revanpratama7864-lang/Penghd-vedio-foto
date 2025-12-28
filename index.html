@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image HD Enhancer (Client-side)</title>
+  <meta name="description" content="Web peng-HD gambar (upscale resolusi) berbasis browser. Cocok untuk GitHub Pages." />
+  <style>
+    :root{--bg:#0f172a;--card:#020617;--txt:#e5e7eb;--muted:#94a3b8;--pri:#22c55e}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
+    .card{width:min(720px,94%);background:var(--card);padding:22px;border-radius:18px;box-shadow:0 25px 50px rgba(0,0,0,.45)}
+    h1{margin:.2em 0 .4em;font-size:1.35rem}
+    p{margin:0 0 12px;color:var(--muted)}
+    input,select,button{padding:10px 12px;border-radius:12px;border:1px solid #1f2937;background:#020617;color:var(--txt)}
+    button{background:var(--pri);color:#052e16;font-weight:700;border:none;cursor:pointer}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    canvas,img{max-width:100%;border-radius:14px}
+    .note{font-size:.85rem;color:var(--muted);margin-top:10px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Peng‑HD Gambar (Upscale)</h1>
+    <p>Naikkan resolusi gambar langsung di browser (tanpa server). Cocok untuk GitHub Pages.</p><div class="row">
+  <input type="file" id="file" accept="image/*" />
+  <select id="scale">
+    <option value="2">2×</option>
+    <option value="3">3×</option>
+    <option value="4">4×</option>
+  </select>
+  <button onclick="upscale()">HD-kan</button>
+  <button onclick="download()">Download</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div class="note">
+  ⚠️ Ini <b>bukan AI super-res</b>. Ini upscale canvas (interpolasi). Hasil lebih tajam dari stretch biasa,
+  tapi tidak menambah detail seperti AI server-side.
+  <br>🎥 Video HD <b>tidak realistis</b> di GitHub Pages (terlalu berat tanpa backend).
+</div>
+
+  </main><script>
+let lastBlob = null;
+function upscale(){
+  const f = document.getElementById('file').files[0];
+  if(!f) return alert('Pilih gambar dulu');
+  const scale = +document.getElementById('scale').value;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.getElementById('canvas');
+    const ctx = c.getContext('2d');
+    c.width = img.width * scale;
+    c.height = img.height * scale;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(b => lastBlob = b, 'image/png', 1);
+  };
+  img.src = URL.createObjectURL(f);
+}
+function download(){
+  if(!lastBlob) return alert('Belum ada hasil');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(lastBlob);
+  a.download = 'HD-image.png';
+  a.click();
+}
+</script></body>
+</html>
